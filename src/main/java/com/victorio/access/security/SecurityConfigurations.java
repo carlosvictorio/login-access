@@ -12,6 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.victorio.access.repositories.UserRepository;
 
@@ -21,6 +22,8 @@ public class SecurityConfigurations {
 	
 	@Autowired
 	UserRepository repository;
+	@Autowired
+	SecurityFilter securityFilter;
 	
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -31,6 +34,7 @@ public class SecurityConfigurations {
 						.requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
 						.anyRequest().authenticated()
 				)
+				.addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();
 	}
 	

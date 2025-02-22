@@ -49,7 +49,6 @@ public class User implements UserDetails{
 		this.username = username;
 		this.password = password;
 		this.role = role;
-		//this.role = role;
 	}*/
 
 	public Long getId() {

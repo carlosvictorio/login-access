@@ -1,6 +1,7 @@
 package com.victorio.access.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,16 +14,20 @@ import org.springframework.web.bind.annotation.RestController;
 import com.victorio.access.dto.UserDTO;
 import com.victorio.access.model.User;
 import com.victorio.access.repositories.UserRepository;
+import com.victorio.access.services.TokenService;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 	
 	@Autowired
+	private TokenService tokenService;
+	
+	@Autowired
 	private AuthenticationManager authenticationManager;
 	
 	@Autowired
-	UserRepository repository;
+	private UserRepository repository;
 	
 	@PostMapping("/register")
 	public ResponseEntity<String> register(@RequestBody UserDTO data) {
@@ -31,8 +36,7 @@ public class AuthController {
 		String passwordEncrypted = new BCryptPasswordEncoder().encode(data.password());
 		User user = new User(data.username(), passwordEncrypted);
 		repository.save(user);
-		return ResponseEntity.status(201).body("User registered successfully!");
-				
+		return ResponseEntity.status(201).body("User registered successfully!");		
 	}
 	
 	@PostMapping("/login")
@@ -40,7 +44,9 @@ public class AuthController {
 		var usernamePassword = new UsernamePasswordAuthenticationToken(data.username(), data.password());
 		var auth = this.authenticationManager.authenticate(usernamePassword);
 		
-		return ResponseEntity.ok().body("Login successfully!");
+		var token = tokenService.generateToken((User) auth.getPrincipal());
+		
+		return ResponseEntity.ok(token);
 	}
 
 }
