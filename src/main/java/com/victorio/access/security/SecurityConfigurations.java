@@ -13,6 +13,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.victorio.access.repositories.UserRepository;
 
@@ -30,6 +33,7 @@ public class SecurityConfigurations {
 		return httpSecurity
 				.csrf(csrf -> csrf.disable())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.cors(cors -> cors.configurationSource(corsConfigurationSource()))//solução para o erro com CORS
 				.authorizeHttpRequests(authorize -> authorize
 						.requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
 						.anyRequest().authenticated()
@@ -37,6 +41,38 @@ public class SecurityConfigurations {
 				.addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();
 	}
+	
+	
+	//solução para o erro com CORS
+	@Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOrigin("http://localhost:5173");  // Permite o domínio de origem
+        config.addAllowedMethod("GET");  // Permite métodos GET
+        config.addAllowedMethod("POST"); // Permite métodos POST
+        config.addAllowedMethod("PUT");  // Permite métodos PUT
+        config.addAllowedMethod("DELETE"); // Permite métodos DELETE
+        config.addAllowedHeader("*");  // Permite todos os cabeçalhos
+        config.setAllowCredentials(true); // Permite envio de credenciais (cookies, auth headers)
+
+        source.registerCorsConfiguration("/**", config); // Aplica a configuração a todas as rotas
+        return source;
+    }
+	
+	/*@Bean
+	    public WebMvcConfigurer corsConfigurer() {
+	        return new WebMvcConfigurer() {
+	            @Override
+	            public void addCorsMappings(CorsRegistry registry) {
+	                registry.addMapping("/**")
+	                    .allowedOrigins("http://localhost:5173​​") 
+	                    .allowedMethods("GET", "POST", "PUT", "DELETE") 
+	                    .allowedHeaders("*") 
+	                    .allowCredentials(true); 
+	            }
+	        };
+	    }*/
 	
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
